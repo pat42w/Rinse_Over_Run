@@ -3,14 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import xgboost as xgb
-from xgboost.sklearn import XGBRegressor
-from sklearn.model_selection import KFold
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 #Point to data folder
-DATA_DIR = '/data/training'
-DATA_DIR_TEST = '/data/test'
+DATA_DIR = 'data/training'
+DATA_DIR_TEST = 'data/test'
 
 #Define functions needed for measuring MAPE
 def mape(pred, actual):
@@ -33,10 +31,10 @@ def evaluate(preds, test_labels):
     return array
 
 #define functions used in clustering 
-def create_object_dataset_for_clustering(df_expl, df_target):
+def create_object_dataset_for_clustering(df_expl):
     
-    df = df_expl.merge(df_target, on='process_id')
-
+    df = df_expl
+    df['process_id'] = df.index
     df_kurt = pd.DataFrame(df.groupby('object_id')['final_rinse_total_turbidity_liter'].apply(pd.DataFrame.kurt).reset_index())
     df_kurt.columns = ['object_id', 'kurtosis']
     df_skew = pd.DataFrame(df.groupby('object_id')['final_rinse_total_turbidity_liter'].skew().reset_index())
@@ -53,9 +51,9 @@ def create_object_dataset_for_clustering(df_expl, df_target):
     scaler = StandardScaler()
     df_normalised_object_summary = pd.DataFrame(scaler.fit_transform(df_object_summary[['kurtosis', 'skew', 'median']]))
     df_normalised_object_summary.columns = ['kurtosis_norm', 'skew_norm', 'median_norm']
-
-    df_object_summary = pd.concat([df_object_summary, df_normalised_object_summary], axis=1)
     
+    df_object_summary = pd.concat([df_object_summary, df_normalised_object_summary], axis=1)
+    df_object_summary=df_object_summary.fillna(0)
     return df_object_summary
 
 def create_object_id_clusters_list(i_num_clusters, df_for_clustering):
@@ -225,10 +223,11 @@ def prep_test_data(X):
     p_test_features=p_test_features.set_index('process_id')
     p_test_features=p_test_features.drop(columns=['pre_rinse_x','pre_rinse_y','final_rinse'])
     print('Test Data prep successful')
+    return p_test_features
 
 def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
     # create the dataset for kmeans
-    df_object_summary_for_clustering = create_object_dataset_for_clustering(Xtrain, ytrain)
+    df_object_summary_for_clustering = create_object_dataset_for_clustering(Xtrain)
 
     i_best_num_clusters = 20
     l_optimum_objects_in_clusters = create_object_id_clusters_list(i_best_num_clusters, df_object_summary_for_clustering)
@@ -238,6 +237,7 @@ def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
         X_prep_a=Xtrain[Xtrain.object_id.isin(l_optimum_objects_in_clusters[i])]
         #select data with result within certain distance of the median
         X_prep_b=X_prep_a[np.abs(X_prep_a.final_rinse_total_turbidity_liter-X_prep_a.final_rinse_total_turbidity_liter.median()) <= (2*X_prep_a.final_rinse_total_turbidity_liter.median())]
+        X_prep_b=X_prep_b.drop(columns=['process_id'])
         train_p_id=pd.DataFrame()
         train_p_id['process_id']=X_prep_b.index
         #drop columns not used in prediction
@@ -257,7 +257,7 @@ def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
         X_test=X_prep_a.drop(columns=['object_id'])
         process_ids=X_prep_a.index
         exec(f'l_out=cxg_{i}.predict(X_test)')
-        out_preds.append(l_out)
+        exec(f'out_preds.append(l_out)')
         lout_process.append(process_ids)
     tlooksy=pd.DataFrame(np.concatenate( out_preds, axis=0 ))
     tlooksy['process_id']=(np.concatenate( lout_process, axis=0 ))
