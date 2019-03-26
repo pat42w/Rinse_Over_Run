@@ -68,52 +68,6 @@ def create_object_id_clusters_list(i_num_clusters, df_for_clustering):
         
     return list_of_list_of_objects
 
-# data for training our model
-X_raw = pd.read_csv(DATA_DIR+'/train_values.csv', index_col=0, parse_dates=['timestamp'])
-recipe_metadata = pd.read_csv(DATA_DIR+'/recipe_metadata.csv',index_col=0)
-y_raw = pd.read_csv(DATA_DIR+'/train_labels.csv',index_col=0)
-# load the test data
-test_values = pd.read_csv(DATA_DIR_TEST+'/test_values.csv',index_col=0,parse_dates=['timestamp'])
-#drop final phase data
-X_raw_1 = X_raw[X_raw.phase != 'final_rinse']
-
-#list of object_id's in the training data
-l_objid=X_raw_1['object_id'].drop_duplicates()
-
-#list of coulums to use in training
-ts_cols = [
-    'process_id',
-    'object_id',
-    'phase',
-    'supply_flow',
-    'supply_pressure',
-    'return_temperature',
-    'return_conductivity',
-    'return_turbidity',
-    'return_flow',
-    'tank_temperature_pre_rinse',
-    'tank_temperature_caustic',
-    'tank_temperature_acid',
-    'tank_concentration_caustic',
-    'tank_concentration_acid',
-    'tank_lsh_acid','tank_lsh_pre_rinse']
-
-#list of boolean coulums to use in training
-boolean_cols = [
-    'process_id',
-    'object_id',
-    'phase',
-    'supply_pump',
-    'supply_pre_rinse',
-    'supply_caustic',
-    'return_caustic',
-    'supply_acid',
-    'return_acid',
-    'supply_clean_water',
-    'return_recovery_water',
-    'return_drain',
-    'object_low_level']    
-
 def prep_train_data(X,y):
     raw_train_values=X
     raw_train_values=raw_train_values[ts_cols]
@@ -227,7 +181,7 @@ def prep_test_data(X):
 
 def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
     # create the dataset for kmeans
-    df_object_summary_for_clustering = create_object_dataset_for_clustering(Xtrain)
+    df_object_summary_for_clustering = df_for_clustering
 
     i_best_num_clusters = 20
     l_optimum_objects_in_clusters = create_object_id_clusters_list(i_best_num_clusters, df_object_summary_for_clustering)
@@ -237,7 +191,7 @@ def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
         X_prep_a=Xtrain[Xtrain.object_id.isin(l_optimum_objects_in_clusters[i])]
         #select data with result within certain distance of the median
         X_prep_b=X_prep_a[np.abs(X_prep_a.final_rinse_total_turbidity_liter-X_prep_a.final_rinse_total_turbidity_liter.median()) <= (2*X_prep_a.final_rinse_total_turbidity_liter.median())]
-        X_prep_b=X_prep_b.drop(columns=['process_id'])
+        #X_prep_b=X_prep_b.drop(columns=['process_id'])
         train_p_id=pd.DataFrame()
         train_p_id['process_id']=X_prep_b.index
         #drop columns not used in prediction
@@ -286,7 +240,7 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
         #drop columns not used in prediction
         X_train=X_train.drop(columns=['object_id','final_rinse_total_turbidity_liter'])
         #create regressor cxg_i for each cluster i
-        exec(f"oxg_{i} = xgb.XGBRegressor(objective ='reg:linear', colsample_bytree = 0.75, learning_rate = 0.05,max_depth = 9, alpha = 0, n_estimators = 50,subsample = 0.75 ,n_jobs=-1)")
+        exec(f"oxg_{i} = xgb.XGBRegressor(objective ='reg:linear', colsample_bytree = 0.75, learning_rate = 0.05,max_depth = 7, alpha = 0, n_estimators = 50,subsample = 0.75 ,n_jobs=-1)")
         exec(f'oxg_{i}.fit(X_train, y_train)')
     out_preds=[]
     lout_process=[]
@@ -298,7 +252,7 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
         X_test=X_prep_a.drop(columns=['object_id'])
         process_ids=X_prep_a.index
         exec(f'l_out=oxg_{i}.predict(X_test)')
-        out_preds.append(l_out)
+        exec(f'out_preds.append(l_out)')
         lout_process.append(process_ids)
     tlooksy=pd.DataFrame(np.concatenate( out_preds, axis=0 ))
     tlooksy['process_id']=(np.concatenate( lout_process, axis=0 ))
@@ -308,5 +262,60 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
     df_pred=df_test_pred.groupby(['process_id']).agg([aggtype])
     df_pred.columns = ['_'.join(col).strip() for col in df_pred.columns.values]
     df_pred.columns=['final_rinse_total_turbidity_liter']
+    df_pred=df_pred*1.03
     print('Object Flow1 successful')
     return df_pred
+
+# data for training our model
+X_raw = pd.read_csv(DATA_DIR+'/train_values.csv', index_col=0, parse_dates=['timestamp'])
+recipe_metadata = pd.read_csv(DATA_DIR+'/recipe_metadata.csv',index_col=0)
+y_raw = pd.read_csv(DATA_DIR+'/train_labels.csv',index_col=0)
+# load the test data
+test_values = pd.read_csv(DATA_DIR_TEST+'/test_values.csv',index_col=0,parse_dates=['timestamp'])
+#drop final phase data
+X_raw_1 = X_raw[X_raw.phase != 'final_rinse']
+df_for_clustering=create_object_dataset_for_clustering(X_raw.merge(y_raw, on='process_id', how='left'))
+#list of object_id's in the training data
+l_objid=X_raw_1['object_id'].drop_duplicates()
+
+#list of coulums to use in training
+ts_cols = [
+    'process_id',
+    'object_id',
+    'phase',
+    'supply_flow',
+    'supply_pressure',
+    'return_temperature',
+    'return_conductivity',
+    'return_turbidity',
+    'return_flow',
+    'tank_temperature_pre_rinse',
+    'tank_temperature_caustic',
+    'tank_temperature_acid',
+    'tank_concentration_caustic',
+    'tank_concentration_acid',
+    'tank_lsh_acid','tank_lsh_pre_rinse']
+
+#list of boolean coulums to use in training
+boolean_cols = [
+    'process_id',
+    'object_id',
+    'phase',
+    'supply_pump',
+    'supply_pre_rinse',
+    'supply_caustic',
+    'return_caustic',
+    'supply_acid',
+    'return_acid',
+    'supply_clean_water',
+    'return_recovery_water',
+    'return_drain',
+    'object_low_level']
+
+def Rinse_over_run():    
+    pred_flow1=Object_Flow1(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values))
+    pred_flow2=Cluster_Flow2(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values))
+    pred_combined=(pred_flow1+pred_flow2)/2
+    print(pred_flow1)
+    print(pred_flow2)
+    return pred_combined
