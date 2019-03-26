@@ -5,7 +5,8 @@ from sklearn.model_selection import train_test_split
 import xgboost as xgb
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-
+import warnings
+warnings.filterwarnings("ignore")
 #Point to data folder
 DATA_DIR = 'data/training'
 DATA_DIR_TEST = 'data/test'
@@ -316,6 +317,5 @@ def Rinse_over_run():
     pred_flow1=Object_Flow1(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values))
     pred_flow2=Cluster_Flow2(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values))
     pred_combined=(pred_flow1+pred_flow2)/2
-    print(pred_flow1)
-    print(pred_flow2)
+    print('Id like a single plum floating in perfume served in a mans hat')
     return pred_combined
