@@ -266,12 +266,24 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
     print('Object Flow1 successful')
     return df_pred
 
+
+def Rinse_over_run():    
+    pred_flow1=Object_Flow1(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values))
+    pred_flow2=Cluster_Flow2(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values))
+    pred_combined=(pred_flow1+pred_flow2)/2
+    print('Id like a single plum floating in perfume served in a mans hat')
+    return pred_combined
+
 # data for training our model
 X_raw = pd.read_csv(DATA_DIR+'/train_values.csv', index_col=0, parse_dates=['timestamp'])
+print('train_values.csv uploaded')
 recipe_metadata = pd.read_csv(DATA_DIR+'/recipe_metadata.csv',index_col=0)
+print('recipe_metadata.csv uploaded')
 y_raw = pd.read_csv(DATA_DIR+'/train_labels.csv',index_col=0)
+print('train_labels.csv uploaded')
 # load the test data
 test_values = pd.read_csv(DATA_DIR_TEST+'/test_values.csv',index_col=0,parse_dates=['timestamp'])
+print('test_values.csv uploaded')
 #drop final phase data
 X_raw_1 = X_raw[X_raw.phase != 'final_rinse']
 df_for_clustering=create_object_dataset_for_clustering(X_raw.merge(y_raw, on='process_id', how='left'))
@@ -311,10 +323,5 @@ boolean_cols = [
     'return_recovery_water',
     'return_drain',
     'object_low_level']
-
-def Rinse_over_run():    
-    pred_flow1=Object_Flow1(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values))
-    pred_flow2=Cluster_Flow2(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values))
-    pred_combined=(pred_flow1+pred_flow2)/2
-    print('Id like a single plum floating in perfume served in a mans hat')
-    return pred_combined
+print('Launching')
+Rinse_over_run()
