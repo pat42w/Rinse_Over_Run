@@ -7,8 +7,7 @@ from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings("ignore")
 #Point to data folder
-DATA_DIR = 'data/training'
-DATA_DIR_TEST = 'data/test'
+DATA_DIR = 'data'
 
 #define functions used in clustering 
 def create_object_dataset_for_clustering(df_expl):
@@ -262,13 +261,15 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
     return df_pred
 
 
-def Rinse_over_run(pred_aggregation='min'):    
-    pred_flow1=Object_Flow1(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values),pred_aggregation)
-    pred_flow2=Cluster_Flow2(prep_train_data(X_raw_1,y_raw),y_raw,prep_test_data(test_values),pred_aggregation)
+def Rinse_over_run(pred_aggregation='min'):
+    Xror_prepped=prep_train_data(X_raw_1,y_raw)
+    yror_prepped=prep_test_data(test_values)   
+    pred_flow1=Object_Flow1(Xror_prepped,y_raw,yror_prepped,pred_aggregation)
+    pred_flow2=Cluster_Flow2(Xror_prepped,y_raw,yror_prepped,pred_aggregation)
     pred_combined=(pred_flow1+pred_flow2)/2
     pred_combined=pd.DataFrame(pred_combined)
-    pred_combined.to_csv(DATA_DIR_TEST+'/test_predictions.csv')
-    print('Success prediction is in data/test/test_predictions.csv')
+    pred_combined.to_csv(DATA_DIR+'/test_predictions.csv')
+    print('Rinse Over Run successful: prediction can be found at data/test/test_predictions.csv')
 
 # data for training our model
 X_raw = pd.read_csv(DATA_DIR+'/train_values.csv', index_col=0, parse_dates=['timestamp'])
@@ -278,7 +279,7 @@ print('recipe_metadata.csv uploaded')
 y_raw = pd.read_csv(DATA_DIR+'/train_labels.csv',index_col=0)
 print('train_labels.csv uploaded')
 # load the test data
-test_values = pd.read_csv(DATA_DIR_TEST+'/test_values.csv',index_col=0,parse_dates=['timestamp'])
+test_values = pd.read_csv(DATA_DIR+'/test_values.csv',index_col=0,parse_dates=['timestamp'])
 print('test_values.csv uploaded')
 #drop final phase data
 X_raw_1 = X_raw[X_raw.phase != 'final_rinse']
