@@ -39,46 +39,5 @@ Object Flow1 successful                     -Object Flow1 executed succesfully
 Clustering Flow2 successful                 -Cluster Flow2 executed succesfully
 Rinse Over Run successful: prediction can be found at data/test/test_predictions.csv 
 
-It takes about 2hrs to recreate the solution, the most time consuming part is 20seeds computation.
+It takes about 10 minutes to for the script to execute  and recreate the solution, the most time consuming part is uploading the csv's as they are quite large.
 
-Solution writeup
-The brief description of the solution is in the reports directory.
-Code structure
- |_ source
- |_ reports: documents made during the challenge according to CRISP-DM methodology
- |_ tests: folder with tests for the library
- |_ data: folder with light data from teh challenge
- |_ rules: the official rules of the challenge
-Final solution
-You can find a script to recreate the final solution on scripts/final_solution folder
-
-Challenge workflow
-Start of the challenge
-Add dates to the calendar
-
-Download rules of the challenge
-
-Create a repository for the code using cookiecutter
-
-Create a Google keep label for tasks and ideas of the challenge
-
-Download the challenge data
-
-Create a conda environment for the challenge
-
-conda create -n repo_name pytest rope pylint tqdm numpy pandas sklearn source activate repo_name conda install -c conda-forge jupyter_contrib_nbextensions
-
-Work on the challenge
-
-Use TDD methodology whenever possible, this will save time because errors won't be propagated along the challenge.
-
-Have an aprentice aptitude, collaborate on the forum, I have a lot to learn from Kaggle.
-
-Prepare a report with a summary of the aproach to the challenge
-
-End of the challenge
-Prepare a report with a summary of the aproach to the challenge
-Download the Google keep tasks to the repository in pdf format
-Delete the tasks on google keep and the label
-Delete unnecessary data
-Update the environment yml
