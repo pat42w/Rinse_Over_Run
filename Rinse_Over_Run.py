@@ -269,7 +269,7 @@ def Rinse_over_run(pred_aggregation='min'):
     pred_combined=(pred_flow1+pred_flow2)/2
     pred_combined=pd.DataFrame(pred_combined)
     pred_combined.to_csv(DATA_DIR+'/test_predictions.csv')
-    print('Rinse Over Run successful: prediction can be found at data/test/test_predictions.csv')
+    print('Rinse Over Run successful: prediction can be found at data/test_predictions.csv')
 
 # data for training our model
 X_raw = pd.read_csv(DATA_DIR+'/train_values.csv', index_col=0, parse_dates=['timestamp'])
@@ -321,4 +321,12 @@ boolean_cols = [
     'return_drain',
     'object_low_level']
 print('Launching')
+#Run the method
 Rinse_over_run()
+#Refering
+#Close by deleting imported data and referencing a classic simpsons quote
+del X_raw
+del X_raw_1
+del df_for_clustering
+del test_values
+print("...It's been done.")
