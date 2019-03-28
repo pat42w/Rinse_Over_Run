@@ -215,7 +215,7 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
     ### Model Creation ###
     #create list of training object ids 
     l_objid=Xtrain['object_id'].drop_duplicates()
-
+    l_objid=np.array(l_objid,dtype=int)
     #create XGBRegressor for each object_id
     for i in l_objid:
         X_prep_a=Xtrain[Xtrain.object_id == i]
