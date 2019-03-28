@@ -286,7 +286,7 @@ X_raw_1 = X_raw[X_raw.phase != 'final_rinse']
 df_for_clustering=create_object_dataset_for_clustering(X_raw.merge(y_raw, on='process_id', how='left'))
 #list of object_id's in the training data
 l_objid=X_raw_1['object_id'].drop_duplicates()
-
+l_objid=np.array(l_objid,dtype=int)
 #list of coulums to use in training
 ts_cols = [
     'process_id',
