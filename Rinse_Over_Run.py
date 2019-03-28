@@ -271,6 +271,7 @@ def Rinse_over_run(pred_aggregation='min'):
     pred_combined.to_csv(DATA_DIR+'/test_predictions.csv')
     print('Rinse Over Run successful: prediction can be found at data/test_predictions.csv')
 
+print('Begining data load this may take a few minutes')
 # data for training our model
 X_raw = pd.read_csv(DATA_DIR+'/train_values.csv', index_col=0, parse_dates=['timestamp'])
 print('train_values.csv uploaded')

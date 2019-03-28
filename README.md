@@ -23,7 +23,8 @@ This data should be available at:
 
 ## Details about generating predictions:
 When running in you should see:
->(base) C:\Users`\YourNameHere\`Documents\GitHub\Rinse_Over_Run>`python Rinse_Over_Run.py`  
+>(base) C:\Users`\YourNameHere\`Documents\GitHub\Rinse_Over_Run>`python Rinse_Over_Run.py`     
+Begining data load this may take a few minutes   
 train_values.csv uploaded  
 recipe_metadata.csv uploaded  
 train_labels.csv uploaded  
@@ -37,6 +38,8 @@ Rinse Over Run successful: prediction can be found at data/test_predictions.csv
 ...It's been done.  
 
 Running Rinse_Over_Run.py then prints the following progress updates:  
+
+Begining data load this may take a few minutes'   
 
 Libraries imported and functions defined   
  > - confirming required libraries have been imported and functions have been defined correctly
@@ -71,7 +74,7 @@ Clustering Flow2 successful
 Rinse Over Run successful: prediction can be found at `data/test_predictions.csv`  
 ...It's been done.  
  > - Verifying completion  
- 
+
  ...It's been done.   
  Referencing a **[classic Simpsons quote](https://www.youtube.com/watch?v=eb1viD56zkM)**.
    
