@@ -1,7 +1,7 @@
 # Rinse_Over_Run
 
 ## Rinse Over Run:
-forecasting the global energy consumption of a building
+forecasting the global energy consumption of a building  
 <https://www.drivendata.org/competitions/56/predict-cleaning-time-series/>
 ## Authors:
 The BI Sharpes: Pat Walsh & David Belton
