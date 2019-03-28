@@ -70,7 +70,8 @@ Clustering Flow2 successful
 
 Rinse Over Run successful: prediction can be found at `data/test_predictions.csv`  
 ...It's been done.  
- > - Verifying completion
+ > - Verifying completion  
+ 
  ...It's been done.   
  Referencing a **[classic Simpsons quote](https://www.youtube.com/watch?v=eb1viD56zkM)**.
    
