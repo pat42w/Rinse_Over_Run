@@ -70,6 +70,6 @@ Clustering Flow2 successful
 
 Rinse Over Run successful: prediction can be found at `data/test_predictions.csv`  
 ...It's been done.  
- > - Verifying completion and referencing a classic Simpsons quote.  
+ > - Verifying completion and referencing a [classic Simpsons quote](https://www.youtube.com/watch?v=eb1viD56zkM).  
    
 It takes about **10 minutes** to for the script to execute and recreate the solution, the most time consuming part is uploading the csv's as they are quite large at 2.13GB.
