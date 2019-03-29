@@ -14,7 +14,7 @@ This data should be available at:
 <https://www.drivendata.org/competitions/56/predict-cleaning-time-series/page/125/#datasets>
 
  2. Ensure the requirements in `requirements.txt` are satisfied.
-  - I'm running this on Windows but this will work in python 3.7.1 with the requirements met.
+     - I'm running this on Windows but this will work in python 3.7.1 with the requirements met.
 
  3. Getting Predictions:
 	 - navigate to `Rinse_Over_Run` base folder
