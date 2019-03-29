@@ -1,7 +1,7 @@
 # Rinse_Over_Run
 
 ## Rinse Over Run:
-forecasting the global energy consumption of a building  
+Forecasting turbidity in F&B industrial equipment.     
 <https://www.drivendata.org/competitions/56/predict-cleaning-time-series/>
 ## Authors:
 The BI Sharpes: Pat Walsh & David Belton
@@ -14,7 +14,7 @@ This data should be available at:
 <https://www.drivendata.org/competitions/56/predict-cleaning-time-series/page/125/#datasets>
 
  2. Ensure the requirements in `requirements.txt` are satisfied.
- >>I use the Spyder ide but this will work in any python environment with the requirements met.
+ >>I'm running this on Windows but this will work in python 3.7.1 with the requirements met.
 
  3. Getting Predictions:
 	 - navigate to `Rinse_Over_Run` base folder
@@ -22,7 +22,7 @@ This data should be available at:
  4. The recreated final submission is stored in `data/test_predictions.csv`
 
 ## Details about generating predictions:
-When running in you should see:
+When the script is running, you should see:
 >(base) C:\Users`\YourNameHere\`Documents\GitHub\Rinse_Over_Run>`python Rinse_Over_Run.py`     
 Begining data load this may take a few minutes   
 train_values.csv uploaded  
@@ -37,12 +37,10 @@ Clustering Flow2 successful
 Rinse Over Run successful: prediction can be found at data/test_predictions.csv  
 ...It's been done.  
 
-Running Rinse_Over_Run.py then prints the following progress updates:  
+Heres an explanation of these progress updates:  
 
-Begining data load this may take a few minutes'   
-
-Libraries imported and functions defined   
- > - confirming required libraries have been imported and functions have been defined correctly
+Begining data load this may take a few minutes.     
+  > - confirming required libraries have been imported and functions have been defined correctly
 
 `train_values.csv` uploaded 
 > - train_values.csv found and read
