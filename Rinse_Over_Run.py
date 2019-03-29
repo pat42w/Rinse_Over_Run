@@ -187,6 +187,7 @@ def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
         #drop columns not used in training
         X_train=X_train.drop(columns=['object_id','final_rinse_total_turbidity_liter'])
         #create regressor cxg_i for each cluster i
+        i=str(i)
         exec(f"cxg_{i} = xgb.XGBRegressor(objective ='reg:linear', colsample_bytree = 0.75, learning_rate = 0.05,max_depth = 9, alpha = 0, n_estimators = 50,subsample = 0.75 ,n_jobs=-1)")
         exec(f'cxg_{i}.fit(X_train, y_train)')
 
@@ -198,6 +199,7 @@ def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
         X_prep_a=Xtest[Xtest.object_id.isin(l_optimum_objects_in_clusters[i])]
         X_test=X_prep_a.drop(columns=['object_id'])
         process_ids=X_prep_a.index
+        i=str(i)
         exec(f'l_out=cxg_{i}.predict(X_test)')
         exec(f'out_preds.append(l_out)')
         lout_process.append(process_ids)
@@ -232,6 +234,7 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
         #drop columns not used in training
         X_train=X_train.drop(columns=['object_id','final_rinse_total_turbidity_liter'])
         #create regressor oxg_i for each object_id i
+        i=str(i)
         exec(f"oxg_{i} = xgb.XGBRegressor(objective ='reg:linear', colsample_bytree = 0.75, learning_rate = 0.05,max_depth = 7, alpha = 0, n_estimators = 50,subsample = 0.75 ,n_jobs=-1)")
         exec(f'oxg_{i}.fit(X_train, y_train)')
 
@@ -246,6 +249,7 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
         X_prep_a=Xtest[Xtest.object_id == i]
         X_test=X_prep_a.drop(columns=['object_id'])
         process_ids=X_prep_a.index
+        i=str(i)
         exec(f'l_out=oxg_{i}.predict(X_test)')
         exec(f'out_preds.append(l_out)')
         lout_process.append(process_ids)
