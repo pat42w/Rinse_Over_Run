@@ -53,7 +53,8 @@ def prep_train_data(X,y):
     raw_train_values=raw_train_values[ts_cols]
     raw_train_values['process_phase'] = raw_train_values.process_id.astype(str) + '_' + raw_train_values.phase.astype(str)
     raw_train_values=raw_train_values.drop(columns=['process_id'])
-    #create turb feature
+
+    # create turb feature
     raw_train_values['turb']=raw_train_values.return_turbidity * raw_train_values.return_flow
     raw_features = raw_train_values.groupby(['process_phase','object_id','phase']).agg(['mean','std','min','max','median'])
     raw_features.columns = ['_'.join(col).strip() for col in raw_features.columns.values]
@@ -92,15 +93,16 @@ def prep_train_data(X,y):
     boolean_features['object_low_level_prc']=boolean_features['object_low_level_sum']/boolean_features['object_low_level_count']
     boolean_features=boolean_features.drop(columns=l_drop)
 
-    #Create phase dummies & merge 
+    # Create phase dummies & merge 
     df_dummies=pd.get_dummies(raw_features['phase'])
     pr_features=pd.concat([raw_features, df_dummies], axis=1)
     p_features=pd.concat([pr_features, boolean_features], axis=1)
     p_features=p_features.drop(columns=['process_phase','phase'])
 
-    #attach recipe metadata
+    # attach recipe metadata
     pa_features=p_features.merge(recipe_metadata, on='process_id', how='left')
-    #attach result variable to remove outliers later when creating a model, drop extra dummy
+
+    # attach result variable to remove outliers later when creating a model, drop extra dummy
     Xres_in=pa_features.merge(y, on='process_id', how='left')
     Xres_in=Xres_in.drop(columns=['pre_rinse_x','pre_rinse_y','final_rinse'])
     Xres_in=Xres_in.set_index('process_id')
@@ -121,6 +123,7 @@ def prep_test_data(X):
     raw_test_features.reset_index( inplace=True)
     raw_test_features['process_id']=raw_test_features['process_phase'].apply(str).str[0:5]
     raw_test_features['process_id']=raw_test_features['process_id'].apply(int)
+    
     # create a boolean features using sum true divided by count
     boolean_test_values=X
     boolean_test_values=boolean_test_values[boolean_cols]
@@ -151,15 +154,17 @@ def prep_test_data(X):
     boolean_test_features['object_low_level_prc']=boolean_test_features['object_low_level_sum']/boolean_test_features['object_low_level_count']
     boolean_test_features=boolean_test_features.drop(columns=l_drop)
 
-    #Create phase dummies & merge 
+    # Create phase dummies & merge 
     df_dummies=pd.get_dummies(raw_test_features['phase'])
     pr_test_features=pd.concat([raw_test_features, df_dummies], axis=1)
     p_test_features=pd.concat([pr_test_features, boolean_test_features], axis=1)
     p_test_features=p_test_features.drop(columns=['process_phase','phase'])
-    #attach recipe metadata
+
+    # attach recipe metadata
     p_test_features=p_test_features.merge(recipe_metadata, on='process_id', how='left')
     p_test_features=p_test_features.set_index('process_id')
     p_test_features=p_test_features.drop(columns=['pre_rinse_x','pre_rinse_y','final_rinse'])
+
     print('Test Data prep successful')
     return p_test_features
 
@@ -171,22 +176,28 @@ def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
     i_best_num_clusters = 20
     l_optimum_objects_in_clusters = create_object_id_clusters_list(i_best_num_clusters, df_object_summary_for_clustering)
 
-    #create XGBRegressor for each Cluster
+    # create XGBRegressor for each Cluster
     for i in range(0, i_best_num_clusters):
         X_prep_a=Xtrain[Xtrain.object_id.isin(l_optimum_objects_in_clusters[i])]
-        #select data with result within distance 2 times the median of the median
+
+        # select data with result within distance 2 times the median of the median
         X_prep_b=X_prep_a[np.abs(X_prep_a.final_rinse_total_turbidity_liter-X_prep_a.final_rinse_total_turbidity_liter.median()) <= (2*X_prep_a.final_rinse_total_turbidity_liter.median())]
-        #create list of process ids being trained on
+        
+        # create list of process ids being trained on
         train_p_id=pd.DataFrame()
         train_p_id['process_id']=X_prep_b.index
-        #Take target values for the training process ids 
+        
+        # Take target values for the training process ids 
         y_train=train_p_id.merge(y_raw, on='process_id', how='left')
         y_train=y_train.set_index('process_id')
-        #split up training & test
+        
+        # split up training & test
         X_train, X_test, y_train, y_test = train_test_split(X_prep_b, y_train, test_size = 0.20, random_state = 42)
-        #drop columns not used in training
+        
+        # drop columns not used in training
         X_train=X_train.drop(columns=['object_id','final_rinse_total_turbidity_liter'])
-        #create regressor cxg_i for each cluster i
+        
+        # create regressor cxg_i for each cluster i
         i=str(i)
         exec(f"cxg_{i} = xgb.XGBRegressor(objective ='reg:linear', colsample_bytree = 0.75, learning_rate = 0.05,max_depth = 9, alpha = 0, n_estimators = 50,subsample = 0.75 ,n_jobs=-1)")
         exec(f'cxg_{i}.fit(X_train, y_train)')
@@ -194,7 +205,8 @@ def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
     ### Predicting ###
     out_preds=[]
     lout_process=[]
-    #segment test data by cluster and predict 
+
+    # segment test data by cluster and predict 
     for i in range(0, i_best_num_clusters):
         X_prep_a=Xtest[Xtest.object_id.isin(l_optimum_objects_in_clusters[i])]
         X_test=X_prep_a.drop(columns=['object_id'])
@@ -210,30 +222,38 @@ def Cluster_Flow2(Xtrain,ytrain,Xtest,aggtype='min'):
     df_pred=df_test_pred.groupby(['process_id']).agg([aggtype])
     df_pred.columns = ['_'.join(col).strip() for col in df_pred.columns.values]
     df_pred.columns=['final_rinse_total_turbidity_liter']
+
     print('Clustering Flow2 successful')
     return df_pred
 
 def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
     ### Model Creation ###
-    #create list of training object ids 
+    # create list of training object ids 
     l_objid=Xtrain['object_id'].drop_duplicates()
     l_objid=np.array(l_objid,dtype=int)
-    #create XGBRegressor for each object_id
+
+    # create XGBRegressor for each object_id
     for i in l_objid:
         X_prep_a=Xtrain[Xtrain.object_id == i]
-        #select data with result within distance 2 times the median of the median
+
+        # select data with result within distance 2 times the median of the median
         X_prep_b=X_prep_a[np.abs(X_prep_a.final_rinse_total_turbidity_liter-X_prep_a.final_rinse_total_turbidity_liter.median()) <= (2*X_prep_a.final_rinse_total_turbidity_liter.median())]
-        #create list of process ids being trained on
+        
+        # create list of process ids being trained on
         train_p_id=pd.DataFrame()
         train_p_id['process_id']=X_prep_b.index
+        
         #Take target values for the training process ids
         y_train=train_p_id.merge(y_raw, on='process_id', how='left')
         y_train=y_train.set_index('process_id')
-        #split up training & test
+        
+        # split up training & test
         X_train, X_test, y_train, y_test = train_test_split(X_prep_b, y_train, test_size = 0.20, random_state = 42)
-        #drop columns not used in training
+        
+        # drop columns not used in training
         X_train=X_train.drop(columns=['object_id','final_rinse_total_turbidity_liter'])
-        #create regressor oxg_i for each object_id i
+        
+        # create regressor oxg_i for each object_id i
         i=str(i)
         exec(f"oxg_{i} = xgb.XGBRegressor(objective ='reg:linear', colsample_bytree = 0.75, learning_rate = 0.05,max_depth = 7, alpha = 0, n_estimators = 50,subsample = 0.75 ,n_jobs=-1)")
         exec(f'oxg_{i}.fit(X_train, y_train)')
@@ -241,10 +261,12 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
     ### Predicting ###    
     out_preds=[]
     lout_process=[]
-    #create list of training object ids and ensure dtype=int 
+
+    # create list of training object ids and ensure dtype=int 
     test_obj_id=Xtest['object_id'].drop_duplicates()
     test_obj_id=np.array(test_obj_id,dtype=int)  
-    #segment test data by object_id and predict 
+
+    # segment test data by object_id and predict 
     for i in test_obj_id:
         X_prep_a=Xtest[Xtest.object_id == i]
         X_test=X_prep_a.drop(columns=['object_id'])
@@ -261,38 +283,53 @@ def Object_Flow1(Xtrain,ytrain,Xtest,aggtype='min'):
     df_pred.columns = ['_'.join(col).strip() for col in df_pred.columns.values]
     df_pred.columns=['final_rinse_total_turbidity_liter']
     df_pred=df_pred*1.03
+
     print('Object Flow1 successful')
     return df_pred
 
 
 def Rinse_over_run(pred_aggregation='min'):
+    # Prep the data
     Xror_prepped=prep_train_data(X_raw_1,y_raw)
-    yror_prepped=prep_test_data(test_values)   
+    yror_prepped=prep_test_data(test_values)
+
+    # Execute Flow1   
     pred_flow1=Object_Flow1(Xror_prepped,y_raw,yror_prepped,pred_aggregation)
+
+    # Execute Flow2
     pred_flow2=Cluster_Flow2(Xror_prepped,y_raw,yror_prepped,pred_aggregation)
+
+    # Combine to create predictions
     pred_combined=(pred_flow1+pred_flow2)/2
     pred_combined=pd.DataFrame(pred_combined)
+
+    # Save prdictions as CSV
     pred_combined.to_csv(DATA_DIR+'/test_predictions.csv')
     print('Rinse Over Run successful: prediction can be found at data/test_predictions.csv')
 
 print('Begining data load this may take a few minutes')
-# data for training our model
+
+# load data for training our model
 X_raw = pd.read_csv(DATA_DIR+'/train_values.csv', index_col=0, parse_dates=['timestamp'])
 print('train_values.csv uploaded')
 recipe_metadata = pd.read_csv(DATA_DIR+'/recipe_metadata.csv',index_col=0)
 print('recipe_metadata.csv uploaded')
 y_raw = pd.read_csv(DATA_DIR+'/train_labels.csv',index_col=0)
 print('train_labels.csv uploaded')
+
 # load the test data
 test_values = pd.read_csv(DATA_DIR+'/test_values.csv',index_col=0,parse_dates=['timestamp'])
 print('test_values.csv uploaded')
-#drop final phase data
+
+# drop final phase data
 X_raw_1 = X_raw[X_raw.phase != 'final_rinse']
 df_for_clustering=create_object_dataset_for_clustering(X_raw.merge(y_raw, on='process_id', how='left'))
-#list of object_id's in the training data
+
+# list of object_id's in the training data
 l_objid=X_raw_1['object_id'].drop_duplicates()
 l_objid=np.array(l_objid,dtype=int)
-#list of coulums to use in training
+
+# list of coulums to use in training
 ts_cols = [
     'process_id',
     'object_id',
@@ -310,7 +347,7 @@ ts_cols = [
     'tank_concentration_acid',
     'tank_lsh_acid','tank_lsh_pre_rinse']
 
-#list of boolean coulums to use in training
+# list of boolean coulums to use in training
 boolean_cols = [
     'process_id',
     'object_id',
@@ -326,10 +363,11 @@ boolean_cols = [
     'return_drain',
     'object_low_level']
 print('Launching')
-#Run the method
+
+# Run the method
 Rinse_over_run()
-#Refering
-#Close by deleting imported data and referencing a classic simpsons quote
+
+# Close by deleting imported data and referencing a classic simpsons quote
 del X_raw
 del X_raw_1
 del df_for_clustering
