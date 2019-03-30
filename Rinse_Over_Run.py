@@ -362,9 +362,9 @@ boolean_cols = [
     'return_recovery_water',
     'return_drain',
     'object_low_level']
-print('Launching')
 
 # Run the method
+print('Launching')
 Rinse_over_run()
 
 # Close by deleting imported data and referencing a classic simpsons quote
